@@ -161,6 +161,7 @@ namespace APP.Auth.API.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
+        [Authorize]
         [ActionName("AddApplicationUserWithRole")]
         [HttpPost("AddApplicationUserWithRole")]
         public async Task<ActionResult<ApplicationUser>> AddApplicationUserWithRole([FromBody] ApplicationUserDto applicationUserDto)
