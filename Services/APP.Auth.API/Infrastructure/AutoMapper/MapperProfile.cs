@@ -17,8 +17,9 @@ namespace APP.Auth.API.Infrastructure.AutoMapper
                .IgnoreAllNonExisting();
 
             CreateMap<ApplicationUser, ApplicationUserDto>()
+                .IgnoreAllNonExisting()
                 .ForMember(dest => dest.AuthorizedFolders, act => act.Ignore())
-                .IgnoreAllNonExisting()              
+                        
                 .ForAllOtherMembers(m => m.UseDestinationValue());
             
              
