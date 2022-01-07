@@ -1,9 +1,11 @@
-﻿using APP.Auth.Model.Dto;
+﻿using APP.Auth.Model;
+using APP.Auth.Model.Dto;
 using APP.Auth.Model.Entity;
 using APP.Base.Model.Base;
 using APP.Base.Model.Dto;
 using APP.Base.Model.Enum;
 using APP.Infra.Base.BaseResult;
+using APP.Infra.Base.Validations.FluentValidation;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -25,7 +27,7 @@ using System.Transactions;
 namespace APP.Auth.API.Controllers
 {  
     [ApiController]
-    [Route("api/v1/[Controller]")]
+
     public class AuthController : ControllerBase
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -160,6 +162,42 @@ namespace APP.Auth.API.Controllers
                 signingCredentials: signingCredentials);
 
             return new JwtSecurityTokenHandler().WriteToken(jwt);
+        }
+        [Authorize]
+        [ActionName("GetApplicationUser")]
+        [HttpGet("GetApplicationUser/{username}")]
+        public ActionResult<ApplicationUserDto> GetApplicationUser(string username)
+        {
+            if (string.IsNullOrEmpty(username)) ModelState.AddModelError("[username]", "username parametresi boş olamaz.");
+
+            if (!ModelState.IsValid)
+                return Ok(new ApiResult<ApplicationUserDto>()
+                {
+                    Errors = ModelState.GetErrors(),
+                    HttpStatusCode = (int?)HttpStatusCode.BadRequest,
+                    Result = false,
+                });
+
+            var user = _userManager.FindByNameAsync(username).GetAwaiter().GetResult();
+            if (user == null) return Ok(new ApiResult<ApplicationUserDto>()
+            {
+                Result = false,
+                Data = null,
+                HttpStatusCode = (int)HttpStatusCode.NotFound,
+                Message = $"'{username}' adlı kullanıcı bulunamadı."
+            });
+
+            var userDto = _mapper.Map<ApplicationUserDto>(user);
+            userDto.Role = _userManager.GetRolesAsync(user).GetAwaiter().GetResult().FirstOrDefault();
+            if (user.AuthorizedFolders is { Length: > 0 })
+                userDto.AuthorizedFolders = JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(user.AuthorizedFolders);
+
+            return Ok(new ApiResult<ApplicationUserDto>()
+            {
+                Result = true,
+                Data = userDto,
+                HttpStatusCode = (int)HttpStatusCode.OK
+            });
         }
         [Authorize]
         [ActionName("AddApplicationUserWithRole")]
