@@ -7,6 +7,7 @@ using APP.Base.Model.Enum;
 using APP.Infra.Base.BaseResult;
 using APP.Infra.Base.Validations.FluentValidation;
 using AutoMapper;
+using FLP.Auth.Model.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -199,7 +200,7 @@ namespace APP.Auth.API.Controllers
                 HttpStatusCode = (int)HttpStatusCode.OK
             });
         }
-        [Authorize]
+       
         [ActionName("AddApplicationUserWithRole")]
         [HttpPost("AddApplicationUserWithRole")]
         public async Task<ActionResult<ApplicationUser>> AddApplicationUserWithRole([FromBody] ApplicationUserDto applicationUserDto)
@@ -258,6 +259,394 @@ namespace APP.Auth.API.Controllers
             }
 
         }
+        [Authorize]
+        [ActionName("ChangePassword")]
+        [HttpPost("ChangePassword")]
+        public async Task<ActionResult<ApplicationUserDto>> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
+        {
+            var user = await _userManager.FindByNameAsync(changePasswordDto.Username);
+            var userDto = _mapper.Map<ApplicationUserDto>(user);
+            userDto.Role = _userManager.GetRolesAsync(user).GetAwaiter().GetResult().FirstOrDefault()?.ToString();
+            userDto.AuthorizedFolders = JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(user.AuthorizedFolders);
+
+            var changePasswordResult = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
+            if (changePasswordResult.Succeeded)
+            {
+                return Ok(new ApiResult<ApplicationUserDto>()
+                {
+                    Result = true,
+                    Data = userDto,
+                    HttpStatusCode = (int)HttpStatusCode.OK
+                });
+            }
+            else
+            {
+                return Ok(new ApiResult<ApplicationUserDto>()
+                {
+                    Result = false,
+                    Data = userDto,
+                    HttpStatusCode = (int)HttpStatusCode.InternalServerError,
+                    Message = changePasswordResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j)
+                });
+            }
+        }
+        [Authorize]
+        [ActionName("AddPassword")]
+        [HttpPost("AddPassword")]
+        public async Task<ActionResult<ApplicationUser>> AddPassword([FromBody] PasswordDto passwordDto)
+        {
+            var repoApplicationUser = await _userManager.FindByNameAsync(passwordDto.Username);
+            var addPasswordResult = await _userManager.AddPasswordAsync(repoApplicationUser, passwordDto.Password);
+            if (addPasswordResult.Succeeded)
+            {
+                return Ok(new ApiResult<ApplicationUser>()
+                {
+                    Result = true,
+                    Data = repoApplicationUser,
+                    HttpStatusCode = (int)HttpStatusCode.OK
+                });
+            }
+            else
+            {
+                return Ok(new ApiResult<ApplicationUser>()
+                {
+                    Result = false,
+                    Data = repoApplicationUser,
+                    HttpStatusCode = (int)HttpStatusCode.InternalServerError,
+                    Message = addPasswordResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j)
+                });
+            }
+        }
+        [Authorize]
+        [ActionName("AddToRole")]
+        [HttpPost("AddToRole")]
+        public async Task<ActionResult<ApplicationUser>> AddToRole([FromBody] RoleDto roleDto)
+        {
+            var repoApplicationUser = await _userManager.FindByNameAsync(roleDto.Username);
+            var addToRoleResult = await _userManager.AddToRoleAsync(repoApplicationUser, roleDto.Role);
+            if (addToRoleResult.Succeeded)
+            {
+                return Ok(new ApiResult<ApplicationUser>()
+                {
+                    Result = true,
+                    Data = repoApplicationUser,
+                    HttpStatusCode = (int)HttpStatusCode.OK
+                });
+            }
+            else
+            {
+                return Ok(new ApiResult<ApplicationUser>()
+                {
+                    Result = false,
+                    Data = repoApplicationUser,
+                    HttpStatusCode = (int)HttpStatusCode.InternalServerError,
+                    Message = addToRoleResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j)
+                });
+            }
+        }
+        [Authorize]
+        [ActionName("UpdateApplicationUserWithRole")]
+        [HttpPost("UpdateApplicationUserWithRole")]
+        public async Task<ActionResult<ApplicationUserDto>> UpdateApplicationUserWithRole([FromBody] ApplicationUserDto applicationUserDto)
+        {
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+
+            try
+            {
+                var repoApplicationUser = await _userManager.FindByNameAsync(applicationUserDto.UserName);
+
+                if (!string.IsNullOrEmpty(applicationUserDto.FirstName)) repoApplicationUser.FirstName = applicationUserDto.FirstName;
+                if (!string.IsNullOrEmpty(applicationUserDto.LastName)) repoApplicationUser.LastName = applicationUserDto.LastName;
+                repoApplicationUser.Status = Status.Modified;
+                repoApplicationUser.SecurityStamp = Guid.NewGuid().ToString();
+                if (!string.IsNullOrEmpty(applicationUserDto.Email)) repoApplicationUser.Email = applicationUserDto.Email;
+                if (!string.IsNullOrEmpty(applicationUserDto.PhoneNumber)) repoApplicationUser.PhoneNumber = applicationUserDto.PhoneNumber;
+
+
+                repoApplicationUser.AuthorizedFolders = applicationUserDto.AuthorizedFolders == null ? repoApplicationUser.AuthorizedFolders : JsonConvert.SerializeObject(applicationUserDto.AuthorizedFolders);
+
+
+                var updateResult = await _userManager.UpdateAsync(repoApplicationUser);
+                if (!updateResult.Succeeded) throw new Exception(updateResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j));
+
+                if (!string.IsNullOrEmpty(applicationUserDto.Role))
+                {
+                    var roles = await _userManager.GetRolesAsync(repoApplicationUser);
+                    var removeRolesResult = await _userManager.RemoveFromRolesAsync(repoApplicationUser, roles);
+                    if (!removeRolesResult.Succeeded) throw new Exception(removeRolesResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j));
+
+                    var addToRoleResult = await _userManager.AddToRoleAsync(repoApplicationUser, applicationUserDto.Role);
+                    if (!addToRoleResult.Succeeded) throw new Exception(addToRoleResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j));
+                }
+                var userDto = _mapper.Map<ApplicationUserDto>(repoApplicationUser);
+                userDto.Role = _userManager.GetRolesAsync(repoApplicationUser).GetAwaiter().GetResult().FirstOrDefault()?.ToString();
+                userDto.AuthorizedFolders = repoApplicationUser.AuthorizedFolders == null ? null : JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(repoApplicationUser.AuthorizedFolders);
+
+                scope.Complete();
+
+                return Ok(new ApiResult<ApplicationUserDto>()
+                {
+                    Result = true,
+                    Data = userDto,
+                    HttpStatusCode = (int)HttpStatusCode.OK
+                });
+
+            }
+            catch (System.Exception ex)
+            {
+                scope.Dispose();
+                return Ok(new ApiResult<ApplicationUserDto>()
+                { HttpStatusCode = (int)HttpStatusCode.Unauthorized, Message = $"{ex.Message}" });
+            }
+        }
+        [ActionName("UpdateAuthorizeFolders/{username}")]
+        [HttpPost("UpdateAuthorizeFolders/{username}")]
+        public async Task<ActionResult<ApplicationUser>> UpdateAuthorizeFolders(string username, [FromBody] List<AuthorizedFolderDto> folders)
+        {
+            if (string.IsNullOrEmpty(username)) ModelState.AddModelError("[username]", "username parametresi boş olamaz.");
+
+            if (!ModelState.IsValid) return Ok(new ApiResult<List<AuthorizedFolderDto>>()
+            {
+                Errors = ModelState.GetErrors(),
+                HttpStatusCode = (int?)HttpStatusCode.BadRequest,
+                Result = false,
+            });
+            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+            try
+            {
+                if (folders is null || folders.Count < 1) return Ok(new ApiResult<ApplicationUser>() { Result = false });
+
+                var repoApplicationUser = await _userManager.FindByNameAsync(username);
+                var userAuthorizedFolders = JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(repoApplicationUser.AuthorizedFolders);
+
+                foreach (var item in folders)
+                {
+                    var enumName = Enum.GetName(item.Authority);
+                    if (enumName is not null)
+                    {
+                        var folderAuthorizationsToUpdate = userAuthorizedFolders.SingleOrDefault(x => x.FolderId == item.FolderId);
+                        if (folderAuthorizationsToUpdate is null)
+                        {
+                            userAuthorizedFolders.Add(item);
+                            break;
+                        }
+                        folderAuthorizationsToUpdate.Authority = item.Authority;
+                    }
+                }
+                repoApplicationUser.AuthorizedFolders = JsonConvert.SerializeObject(userAuthorizedFolders);
+                var updateResult = await _userManager.UpdateAsync(repoApplicationUser);
+                if (!updateResult.Succeeded) throw new Exception(updateResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j));
+
+                scope.Complete();
+
+                return Ok(new ApiResult<ApplicationUser>()
+                {
+                    Result = true,
+                    Data = repoApplicationUser,
+                    HttpStatusCode = (int)HttpStatusCode.OK
+                });
+            }
+            catch (System.Exception ex)
+            {
+                scope.Dispose();
+                return Ok(new ApiResult<ApplicationUser>()
+                { HttpStatusCode = (int)HttpStatusCode.Unauthorized, Message = $"{ex.Message}" });
+            }
+        }
+        [Authorize]
+        [ActionName("DeleteApplicationUser")]
+        [HttpDelete("DeleteApplicationUser")]
+        public async Task<ActionResult<ApplicationUser>> DeleteApplicationUser(string username)
+        {
+            if (string.IsNullOrEmpty(username)) ModelState.AddModelError("[username]", "username parametresi boş olamaz.");
+
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByNameAsync(username);
+                var roles = await _userManager.GetRolesAsync(user);
+                var removeRolesResult = await _userManager.RemoveFromRolesAsync(user, roles);
+                if (!removeRolesResult.Succeeded) throw new Exception(removeRolesResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j));
+
+                var deleteResult = await _userManager.DeleteAsync(user);
+                if (deleteResult.Succeeded)
+                {
+                    return Ok(new ApiResult<ApplicationUser>()
+                    {
+                        Result = true,
+                        Data = user,
+                        HttpStatusCode = (int)HttpStatusCode.OK
+                    });
+                }
+                else
+                {
+                    return Ok(new ApiResult<ApplicationUser>()
+                    {
+                        Result = false,
+                        Data = user,
+                        HttpStatusCode = (int)HttpStatusCode.InternalServerError,
+                        Message = deleteResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j)
+                    });
+                }
+            }
+            return Ok(new ApiResult<ApplicationUser>()
+            {
+                Errors = ModelState.GetErrors(),
+                HttpStatusCode = (int?)HttpStatusCode.BadRequest,
+                Result = false,
+            });
+
+
+        }
+
+        [Authorize]
+        [ActionName("GetApplicationUsers")]
+        [HttpGet("GetApplicationUsers")]
+        public ActionResult<List<ApplicationUserDto>> GetApplicationUsers(int page, int limit)
+        {
+            if (page < 0) ModelState.AddModelError(nameof(page), "Page 0'dan küçük olmamalı.");
+            if (limit < 1) ModelState.AddModelError(nameof(limit), "Limit 1'den küçük olmamalı.");
+
+            if (ModelState.IsValid)
+            {
+                var repoUsers = _userManager.Users.OrderBy(x => x.Id);
+
+                return Ok(new ApiResult<List<ApplicationUserDto>>()
+                {
+                    Data = repoUsers.Skip((page) * limit).Take(limit).ToList().Select(x => new ApplicationUserDto
+                    {
+                        UserName = x.UserName,
+                        Email = x.Email,
+                        FirstName = x.FirstName,
+                        LastName = x.LastName,
+                        PhoneNumber = x.PhoneNumber,
+                        Role = _userManager.GetRolesAsync(x).GetAwaiter().GetResult().FirstOrDefault()?.ToString(),
+                        AuthorizedFolders = string.IsNullOrEmpty(x.AuthorizedFolders) ? null : JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(x.AuthorizedFolders)
+                    }).ToList(),
+                    Message = "",
+                    Result = true,
+                    HttpStatusCode = (int)HttpStatusCode.OK,
+                    PaginationMetaData = new PaginationMetaData() { Page = page, Limit = limit, TotalCount = repoUsers.Count() }
+                });
+            }
+            return Ok(new ApiResult<List<ApplicationUserDto>>()
+            {
+                Data = null,
+                HttpStatusCode = (int?)HttpStatusCode.BadRequest,
+                Errors = ModelState.GetErrors(),
+            });
+        }
+        [Authorize]
+        [ActionName("GetApplicationUsersWithRole")]
+        [HttpGet("GetApplicationUsersWithRole/{role}")]
+        public ActionResult<List<ApplicationUserDto>> GetApplicationUsersWithRole(string role, int page, int limit)
+        {
+            //query by region
+            if (page < 0) ModelState.AddModelError(nameof(page), "Page 0'dan küçük olmamalı.");
+            if (limit < 1) ModelState.AddModelError(nameof(limit), "Limit 1'den küçük olmamalı.");
+
+            if (!ModelState.IsValid)
+                return BadRequest(new ApiResult<List<ApplicationUserDto>>()
+                {
+                    Data = null,
+                    HttpStatusCode = (int?)HttpStatusCode.BadRequest,
+                    Errors = ModelState.GetErrors(),
+                });
+
+            var repoUsers = _userManager.Users.OrderBy(x => x.Id).ToList();
+            var users = repoUsers.Select(x => new ApplicationUserDto
+            {
+                Id = x.Id,
+                UserName = x.UserName,
+                Email = x.Email,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                PhoneNumber = x.PhoneNumber,
+                Role = _userManager.GetRolesAsync(x).Result.FirstOrDefault()?.ToString(),
+                AuthorizedFolders = string.IsNullOrEmpty(x.AuthorizedFolders)
+                    ? null
+                    : JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(x.AuthorizedFolders)
+            }).ToList();
+
+            users = users.Where(x => x.Role != null && x.Role.ToLower().Trim().Equals(role.ToLower().Trim())).Skip((page) * limit).Take(limit).ToList();
+
+            return Ok(new ApiResult<List<ApplicationUserDto>>()
+            {
+                Data = users,
+                Message = "",
+                Result = true,
+                HttpStatusCode = (int)HttpStatusCode.OK,
+                PaginationMetaData = new PaginationMetaData { Page = page, Limit = limit, TotalCount = repoUsers.Count() }
+            });
+        }
+
+        [Authorize]
+        [ActionName("GetApplicationRoles")]
+        [HttpGet("GetApplicationRoles")]
+        public ActionResult<List<ApplicationRole>> GetApplicationRoles()
+        {
+            try
+            {
+                var repoRoles = _roleManager.Roles.ToList();
+                return Ok(new ApiResult<List<ApplicationRole>>()
+                {
+                    Result = true,
+                    Data = repoRoles,
+                    HttpStatusCode = (int)HttpStatusCode.OK
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new ApiResult<List<ApplicationRole>>()
+                {
+                    HttpStatusCode = (int?)HttpStatusCode.Unauthorized,
+                    Message = $"{ex.Message}"
+                });
+            }
+        }
+        [ActionName("GetApplicationUserAuthorizedFolders/{username}")]
+        [HttpGet("GetApplicationUserAuthorizedFolders/{username}")]
+        public ActionResult<List<AuthorizedFolderDto>> GetApplicationUserAuthorizedFolders(string username)
+        {
+
+            if (string.IsNullOrEmpty(username)) ModelState.AddModelError("[username]", "username parametresi boş olamaz.");
+
+
+            if (ModelState.IsValid)
+            {
+                var repoUser = _userManager.Users.FirstOrDefault(x => x.UserName == username);
+                if (repoUser == null) return Ok(new ApiResult<List<AuthorizedFolderDto>>()
+                {
+                    Result = false,
+                    Data = null,
+                    Message = $"'{username}' adlı kullanıcı bulunamadı.",
+                    HttpStatusCode = (int)HttpStatusCode.NotFound
+                });
+                var authorizedFolders = string.IsNullOrEmpty(repoUser.AuthorizedFolders) ? null : JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(repoUser.AuthorizedFolders);
+                return Ok(new ApiResult<List<AuthorizedFolderDto>>()
+                {
+                    Result = true,
+                    Data = authorizedFolders,
+                    HttpStatusCode = (int)HttpStatusCode.OK
+                });
+            }
+            return Ok(new ApiResult<List<AuthorizedFolderDto>>()
+            {
+                Errors = ModelState.GetErrors(),
+                HttpStatusCode = (int?)HttpStatusCode.BadRequest,
+                Result = false,
+            });
+        }
+
+        //[HttpPost("CreateRole")]
+        //public async Task<IActionResult> CreateRole(AppRoleDto model)
+        //{
+        //    IdentityResult result = await _roleManager.CreateAsync(new AppRole { Name = model.Name, OlusturulmaTarihi = DateTime.Now });
+        //    if (result.Succeeded)
+        //    {
+        //        return Ok(new ApiResult() { Message = "rol oluşturuldu" });
+        //    }
+        //    return BadRequest(new ApiResult() { Message = "rol oluşturma başarısız" });
+        //}
         [ApiExplorerSettings(IgnoreApi = true)]
         private Role ToStringRoleEnum(string roles)
         {
