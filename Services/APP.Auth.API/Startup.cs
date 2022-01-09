@@ -47,12 +47,12 @@ namespace APP.Auth.API
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "FLP.Auth.API",
-                    Description = "FLP.Auth.API",
+                    Title = "APP.Auth.API",
+                    Description = "APP.Auth.API",
                     TermsOfService = new Uri("https://example.com/terms"),
                     Contact = new OpenApiContact
                     {
-                        Name = "FLP.Auth.API",
+                        Name = "APP.Auth.API",
                         Email = string.Empty,
                         Url = new Uri("https://example.com/terms"),
                     },
