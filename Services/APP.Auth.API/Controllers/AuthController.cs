@@ -636,6 +636,16 @@ namespace APP.Auth.API.Controllers
                 Result = false,
             });
         }
+        [HttpPost("CreateRole")]
+        public async Task<IActionResult> CreateRole(AppRoleDto model)
+        {
+            IdentityResult result = await _roleManager.CreateAsync(new ApplicationRole { Name = model.Name});
+            if (result.Succeeded)
+            {
+                return Ok(new ApiResult() { Message = "rol oluşturuldu" });
+            }
+            return BadRequest(new ApiResult() { Message = "rol oluşturma başarısız" });
+        }
 
         //[HttpPost("CreateRole")]
         //public async Task<IActionResult> CreateRole(AppRoleDto model)
