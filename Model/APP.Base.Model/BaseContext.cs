@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace APP.Base.Model
 {
-    class BaseContext:DbContext
+   public class BaseContext:DbContext
     {
         public BaseContext(DbContextOptions<BaseContext> options):base(options)
         {

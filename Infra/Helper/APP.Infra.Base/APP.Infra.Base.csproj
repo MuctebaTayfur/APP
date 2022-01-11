@@ -10,6 +10,11 @@
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Model\APP.Base.Model\APP.Base.Model.csproj" />
   </ItemGroup>
 
 </Project>

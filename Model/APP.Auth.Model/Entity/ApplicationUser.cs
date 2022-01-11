@@ -1,3 +1,4 @@
+using APP.Base.Model.Entity;
 using APP.Base.Model.Enum;
 using Microsoft.AspNetCore.Identity;
 
@@ -29,5 +30,8 @@ namespace APP.Auth.Model.Entity
         public string Avatar { get; set; }
         public string Theme { get; set; }
         public virtual ICollection<UserRegions> UserRegions { get; set; }
+        [ForeignKey("Company")]
+        public long CompanyId { get; set; }
+        public Company Company { get; set; }
     }
 }

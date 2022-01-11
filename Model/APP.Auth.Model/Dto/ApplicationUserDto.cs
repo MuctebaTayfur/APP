@@ -10,7 +10,7 @@ namespace APP.Auth.Model.Dto
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        //companyID ekelenecek
+      
         //product list = null
         //packet tablos
         public Status? Status { get; set; }
@@ -24,6 +24,7 @@ namespace APP.Auth.Model.Dto
         public List<AuthorizedFolderDto>? AuthorizedFolders { get; set; }
         public string Avatar { get; set; }
         public string Theme { get; set; }//default olarak light
+        public long CompanyId { get; set; }
 
     }
 }

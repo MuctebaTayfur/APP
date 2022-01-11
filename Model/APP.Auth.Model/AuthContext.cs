@@ -1,4 +1,5 @@
 ﻿using APP.Auth.Model.Entity;
+using APP.Base.Model.Entity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace APP.Auth.Model
     {
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<ApplicationRole> ApplicationRoles { get; set; }
+        public DbSet<Company> Companies { get; set; }
+
 
         public AuthContext(DbContextOptions<AuthContext> options) : base(options)
         {

@@ -2,6 +2,7 @@ using APP.Auth.Model;
 using APP.Auth.Model.Entity;
 using APP.Common.Data.Concrete;
 using APP.Data.Interface;
+using APP.Infra.Base.BaseHandler;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,6 +36,8 @@ namespace APP.Auth.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
+            services.AddHttpContextAccessor();
             services.AddMvc();
             services.AddScoped<IUnitOfWork<AuthContext>, UnitOfWork<AuthContext>>();
             services.AddIdentity<ApplicationUser, ApplicationRole>().AddEntityFrameworkStores<AuthContext>().AddDefaultTokenProviders();
@@ -42,6 +45,8 @@ namespace APP.Auth.API
             services.AddControllers();
             services.AddAutoMapper(typeof(Startup));
             services = Infra.Base.Extensions.ServiceCollectionExtensions.AddCustomJwtToken(services);
+            services.AddHttpClient();
+            ServiceLocator.SetLocatorProvider(services.BuildServiceProvider());
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
