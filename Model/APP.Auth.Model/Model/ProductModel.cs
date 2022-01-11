@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace APP.Auth.Model.Entity
+namespace APP.Base.Model.Model
 {
-    class ApplicationProducts
+    class ProductModel
     {
     }
 }
