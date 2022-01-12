@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace APP.Base.Model.Dto
 {
-    class PacketDto
+    public class PacketDto
     {
         public long Id { get; set; }
         public Status Status { get; set; }

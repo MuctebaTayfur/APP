@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using APP.Base.Model.Entity;
 using APP.Base.Model.Enum;
 
 
@@ -7,7 +8,7 @@ namespace APP.Auth.Model.Dto
 {
     public class ApplicationUserDto
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public Status Status { get; set; }
         public DateTime CreatedOn { get; set; }
         public long CreatedBy { get; set; }
@@ -28,6 +29,7 @@ namespace APP.Auth.Model.Dto
         public string Avatar { get; set; }
         public string Theme { get; set; }//default olarak light
         public long CompanyId { get; set; }
+        public int ProductId { get; set; }
 
     }
 }

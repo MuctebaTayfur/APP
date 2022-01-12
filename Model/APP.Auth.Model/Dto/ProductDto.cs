@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace APP.Base.Model.Dto
 {
-    class ProductDto
+    public class ProductDto
     {
         public long Id { get; set; }
         public Status Status { get; set; }
@@ -22,6 +22,6 @@ namespace APP.Base.Model.Dto
         public string Name { get; set; }
         public string Description { get; set; }
         //public ICollection<Packet> Packets { get; set; }
-        public ICollection<ApplicationUser> Users { get; set; }
+    
     }
 }

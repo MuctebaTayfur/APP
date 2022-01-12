@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace APP.Auth.Model.Migrations
 {
-    public partial class CreateDb : Migration
+    public partial class createDb : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -30,38 +30,51 @@ namespace APP.Auth.Model.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AspNetUsers",
+                name: "Companies",
                 schema: "auth",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
-                    LastName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
-                    Status = table.Column<short>(type: "smallint", nullable: false),
-                    AuthorizedFolders = table.Column<string>(type: "text", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    CreatedBy = table.Column<int>(type: "integer", nullable: false),
-                    Avatar = table.Column<string>(type: "text", nullable: true),
-                    Theme = table.Column<string>(type: "text", nullable: true),
-                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    PasswordHash = table.Column<string>(type: "text", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
+                    Address = table.Column<string>(type: "text", nullable: true),
+                    Email = table.Column<string>(type: "text", nullable: true),
+                    Avatar = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<short>(type: "smallint", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: false),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ModifiedBy = table.Column<long>(type: "bigint", nullable: true),
+                    DeletedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    DeletedBy = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.PrimaryKey("PK_Companies", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Products",
+                schema: "auth",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<short>(type: "smallint", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: false),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ModifiedBy = table.Column<long>(type: "bigint", nullable: true),
+                    DeletedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    DeletedBy = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -83,6 +96,76 @@ namespace APP.Auth.Model.Migrations
                         column: x => x.RoleId,
                         principalSchema: "auth",
                         principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AspNetUsers",
+                schema: "auth",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FirstName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    LastName = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    Status = table.Column<short>(type: "smallint", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatedBy = table.Column<int>(type: "integer", nullable: false),
+                    Avatar = table.Column<string>(type: "text", nullable: true),
+                    Theme = table.Column<string>(type: "text", nullable: true),
+                    CompanyId = table.Column<long>(type: "bigint", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUsers_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalSchema: "auth",
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ApplicationUserProducts",
+                schema: "auth",
+                columns: table => new
+                {
+                    ApplicationUserId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ApplicationUserProducts", x => new { x.ApplicationUserId, x.ProductId });
+                    table.ForeignKey(
+                        name: "FK_ApplicationUserProducts_AspNetUsers_ApplicationUserId",
+                        column: x => x.ApplicationUserId,
+                        principalSchema: "auth",
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ApplicationUserProducts_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalSchema: "auth",
+                        principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -181,35 +264,11 @@ namespace APP.Auth.Model.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "UserRegions",
+            migrationBuilder.CreateIndex(
+                name: "IX_ApplicationUserProducts_ProductId",
                 schema: "auth",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RegionId = table.Column<long>(type: "bigint", nullable: false),
-                    UserName = table.Column<string>(type: "text", nullable: true),
-                    ApplicationUserId = table.Column<int>(type: "integer", nullable: true),
-                    Status = table.Column<short>(type: "smallint", nullable: false),
-                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    CreatedBy = table.Column<long>(type: "bigint", nullable: false),
-                    ModifiedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    ModifiedBy = table.Column<long>(type: "bigint", nullable: true),
-                    DeletedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
-                    DeletedBy = table.Column<long>(type: "bigint", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserRegions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserRegions_AspNetUsers_ApplicationUserId",
-                        column: x => x.ApplicationUserId,
-                        principalSchema: "auth",
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
+                table: "ApplicationUserProducts",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -249,21 +308,25 @@ namespace APP.Auth.Model.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_CompanyId",
+                schema: "auth",
+                table: "AspNetUsers",
+                column: "CompanyId");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 schema: "auth",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRegions_ApplicationUserId",
-                schema: "auth",
-                table: "UserRegions",
-                column: "ApplicationUserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ApplicationUserProducts",
+                schema: "auth");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims",
                 schema: "auth");
@@ -285,7 +348,7 @@ namespace APP.Auth.Model.Migrations
                 schema: "auth");
 
             migrationBuilder.DropTable(
-                name: "UserRegions",
+                name: "Products",
                 schema: "auth");
 
             migrationBuilder.DropTable(
@@ -294,6 +357,10 @@ namespace APP.Auth.Model.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers",
+                schema: "auth");
+
+            migrationBuilder.DropTable(
+                name: "Companies",
                 schema: "auth");
         }
     }

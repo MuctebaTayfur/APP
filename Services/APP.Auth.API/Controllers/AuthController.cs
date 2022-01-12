@@ -200,6 +200,7 @@ namespace APP.Auth.API.Controllers
             using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
             try
             {
+               
                 var repoApplicationUserByEmail = await _userManager.FindByEmailAsync(applicationUserDto.Email);
                 if (repoApplicationUserByEmail != null) return Ok(new ApiResult()
                 { HttpStatusCode = (int)HttpStatusCode.BadRequest, Result = false, Message = $"Bu e-mail[{applicationUserDto.Email}] zaten alınmış. Başka bir tane deneyin." });
@@ -219,9 +220,11 @@ namespace APP.Auth.API.Controllers
                     UserName = applicationUserDto.UserName,
                     Email = applicationUserDto.Email,
                     CompanyId=applicationUserDto.CompanyId,
-                    PhoneNumber = applicationUserDto.PhoneNumber
-                   
+                    PhoneNumber = applicationUserDto.PhoneNumber,
+              
+                  
                 };
+                
 
                 var addResult = await _userManager.CreateAsync(applicationUser);
                 if (!addResult.Succeeded) throw new Exception(addResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j));

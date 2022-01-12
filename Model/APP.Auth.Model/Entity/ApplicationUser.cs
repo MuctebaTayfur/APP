@@ -11,7 +11,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace APP.Auth.Model.Entity
 {
     public class ApplicationUser : IdentityUser<int>
-    {   
+    {
+    
         [StringLength(250)]
         public string FirstName { get; set; }
         
@@ -33,5 +34,6 @@ namespace APP.Auth.Model.Entity
         [ForeignKey("Company")]
         public long CompanyId { get; set; }
         public Company Company { get; set; }
+        public virtual ICollection<ApplicationUserProduct> ApplicationUserProducts { get; set; }
     }
 }

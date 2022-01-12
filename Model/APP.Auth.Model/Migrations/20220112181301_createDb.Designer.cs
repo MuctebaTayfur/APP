@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace APP.Auth.Model.Migrations
 {
     [DbContext(typeof(AuthContext))]
-    [Migration("20220111123145_update-db")]
-    partial class updatedb
+    [Migration("20220112181301_createDb")]
+    partial class createDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -66,9 +66,6 @@ namespace APP.Auth.Model.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
-
-                    b.Property<string>("AuthorizedFolders")
-                        .HasColumnType("text");
 
                     b.Property<string>("Avatar")
                         .HasColumnType("text");
@@ -154,48 +151,22 @@ namespace APP.Auth.Model.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("APP.Auth.Model.Entity.UserRegions", b =>
+            modelBuilder.Entity("APP.Auth.Model.Entity.ApplicationUserProduct", b =>
                 {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<int?>("ApplicationUserId")
+                    b.Property<int>("ApplicationUserId")
                         .HasColumnType("integer");
 
-                    b.Property<long>("CreatedBy")
+                    b.Property<long>("ProductId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<long?>("DeletedBy")
+                    b.Property<long>("Id")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime?>("DeletedOn")
-                        .HasColumnType("timestamp without time zone");
+                    b.HasKey("ApplicationUserId", "ProductId");
 
-                    b.Property<long?>("ModifiedBy")
-                        .HasColumnType("bigint");
+                    b.HasIndex("ProductId");
 
-                    b.Property<DateTime?>("ModifiedOn")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<long>("RegionId")
-                        .HasColumnType("bigint");
-
-                    b.Property<short>("Status")
-                        .HasColumnType("smallint");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ApplicationUserId");
-
-                    b.ToTable("UserRegions");
+                    b.ToTable("ApplicationUserProducts");
                 });
 
             modelBuilder.Entity("APP.Base.Model.Entity.Company", b =>
@@ -247,6 +218,45 @@ namespace APP.Auth.Model.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("APP.Base.Model.Entity.Product", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<long?>("DeletedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("ModifiedBy")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<short>("Status")
+                        .HasColumnType("smallint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -361,12 +371,23 @@ namespace APP.Auth.Model.Migrations
                     b.Navigation("Company");
                 });
 
-            modelBuilder.Entity("APP.Auth.Model.Entity.UserRegions", b =>
+            modelBuilder.Entity("APP.Auth.Model.Entity.ApplicationUserProduct", b =>
                 {
-                    b.HasOne("APP.Auth.Model.Entity.ApplicationUser", null)
-                        .WithMany("UserRegions")
+                    b.HasOne("APP.Auth.Model.Entity.ApplicationUser", "ApplicationUser")
+                        .WithMany("ApplicationUserProducts")
                         .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("APP.Base.Model.Entity.Product", "Product")
+                        .WithMany("ApplicationUserProducts")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -422,12 +443,17 @@ namespace APP.Auth.Model.Migrations
 
             modelBuilder.Entity("APP.Auth.Model.Entity.ApplicationUser", b =>
                 {
-                    b.Navigation("UserRegions");
+                    b.Navigation("ApplicationUserProducts");
                 });
 
             modelBuilder.Entity("APP.Base.Model.Entity.Company", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("APP.Base.Model.Entity.Product", b =>
+                {
+                    b.Navigation("ApplicationUserProducts");
                 });
 #pragma warning restore 612, 618
         }

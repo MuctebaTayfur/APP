@@ -30,9 +30,9 @@ namespace APP.Auth.API.Controllers
             _unitOfWork = unitOfWork;
             _apiHandler =new ApiHandler();
         }
-        [ActionName("AddCompanyUser")]
-        [HttpPost("AddCompanyUser")]
-        public async Task<ActionResult<Company>> AddCompanyUser([FromBody] UserCompanyDto model)
+        [ActionName("AddCompanyAndAdminUser")]
+        [HttpPost("AddCompanyAndAdminUser")]
+        public async Task<ActionResult<Company>> AddCompanyAndAdminUser([FromBody] UserCompanyDto model)
         { 
             try
             {
@@ -48,7 +48,7 @@ namespace APP.Auth.API.Controllers
                     Address = model.Address,
                     DeletedBy = model.DeletedBy,
                 };
-
+                
                 _unitOfWork.Repository<Company>().Insert(company);
                 if (_unitOfWork.SaveChanges() <= 0)
                 {
@@ -63,15 +63,10 @@ namespace APP.Auth.API.Controllers
                 {
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    PhoneNumber = model.PhoneNumber,
-                    Status = model.Status,
+                    PhoneNumber = model.PhoneNumber,               
                     UserName = model.UserName,
                     Email = model.Email,
-                    Password = model.Password,
-                    CreatedOn = model.CreatedOn,
-                    CreatedBy = model.CreatedBy,
-                    DeletedBy = model.DeletedBy,
-                    DeletedOn = model.DeletedOn,
+                    Password = model.Password,                                   
                     Avatar = model.UserAvatar,
                     Role = "Admin",
                     Theme = model.Theme,

@@ -11,7 +11,7 @@ namespace APP.Base.Model.Entity
     {
         public string Name { get; set; }
         public string Description { get; set; }
-        public ICollection<Packet> Packets { get; set; }
-        public ICollection<ApplicationUser> Users { get; set; }
+        //public ICollection<Packet> Packets { get; set; }
+        public virtual ICollection<ApplicationUserProduct> ApplicationUserProducts { get; set; }
     }
 }

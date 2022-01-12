@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace APP.Base.Model.Model
 {
-    class ProductModel
+    public class ProductModel
     {
         public long Id { get; set; }
         public string Name { get; set; }

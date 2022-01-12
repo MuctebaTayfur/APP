@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace APP.Base.Model.Model
 {
-    class PacketModel
+    public class PacketModel
     {
         public long Id { get; set; }
         public string Name { get; set; }

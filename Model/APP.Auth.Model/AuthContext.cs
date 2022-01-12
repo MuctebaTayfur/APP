@@ -12,6 +12,8 @@ namespace APP.Auth.Model
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<ApplicationRole> ApplicationRoles { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<ApplicationUserProduct> ApplicationUserProducts { get; set; }
 
 
         public AuthContext(DbContextOptions<AuthContext> options) : base(options)
@@ -27,6 +29,17 @@ namespace APP.Auth.Model
                 relationship.DeleteBehavior = DeleteBehavior.Restrict;
 
             modelBuilder.HasDefaultSchema("auth");
+            modelBuilder.Entity<ApplicationUserProduct>()
+                .HasKey(up => new { up.ApplicationUserId,up.ProductId});
+            modelBuilder.Entity<ApplicationUserProduct>()
+                .HasOne(up => up.ApplicationUser)
+                .WithMany(au => au.ApplicationUserProducts)
+                .HasForeignKey(au => au.ApplicationUserId);
+            modelBuilder.Entity<ApplicationUserProduct>()
+                .HasOne(up => up.Product)
+                .WithMany(p => p.ApplicationUserProducts)
+                .HasForeignKey(au => au.ProductId);
+
         }
     }
 }
