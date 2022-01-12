@@ -22,8 +22,8 @@ namespace APP.Infra.Base.BaseHandler
         public Guid? TransactionId { get; set; }
         public string SourceApi { get; set; }
         private const string RequestSource = "APP";
-        private readonly string basePath = "https://app-user-service.azurewebsites.net";
-        //private readonly string basePath = "http://localhost:44352";
+        //private readonly string basePath = "https://app-user-service.azurewebsites.net";
+        private readonly string basePath = "https://localhost:44352";
         public ApiHandler()
         {
             _authenticationModel = new AuthenticationModel();
@@ -130,6 +130,53 @@ namespace APP.Infra.Base.BaseHandler
             }
 
             return p;
+        }
+        public async Task<ApiResult<T>> PostApiResult<T>(string url, object p)
+        {
+            var responseString = await Send(url, RequestType.POST, p);
+
+            var apiResult = JsonConvert.DeserializeObject<ApiResult<T>>(responseString);
+            return apiResult;
+        }
+
+        public async Task<T> Post<T>(string url, object p)
+        {
+            var result = await Send(url, RequestType.POST, p);
+
+            var apiResult = JsonConvert.DeserializeObject<ApiResult<T>>(result);
+            var resultObject = default(T);
+
+            if (!apiResult.Result) return resultObject;
+            if (apiResult.Data != null)
+            {
+                resultObject = apiResult.Data;
+            }
+
+            return resultObject;
+        }
+
+        public async Task<ApiResult<T>> PutApiResult<T>(string url, object p)
+        {
+            var responseString = await Send(url, RequestType.PUT, p);
+
+            var apiResult = JsonConvert.DeserializeObject<ApiResult<T>>(responseString);
+            return apiResult;
+        }
+
+        public async Task<T1> Put<T, T1>(string url, T p)
+        {
+            var result = await Send(url, RequestType.PUT, p);
+
+            var apiResult = JsonConvert.DeserializeObject<ApiResult<T1>>(result);
+            var resultObject = default(T1);
+
+            if (!apiResult.Result) return resultObject;
+            if (apiResult.Data != null)
+            {
+                resultObject = apiResult.Data;
+            }
+
+            return resultObject;
         }
     }
     

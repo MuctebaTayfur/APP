@@ -21,7 +21,7 @@ namespace APP.Base.Model.Dto
         public long? DeletedBy { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public ICollection<Packet> Packets { get; set; }
+        //public ICollection<Packet> Packets { get; set; }
         public ICollection<ApplicationUser> Users { get; set; }
     }
 }

@@ -22,14 +22,14 @@ namespace APP.Auth.Model.Entity
         public string Name => $"{this.FirstName} {this.LastName}";
 
         public Status Status { get; set; }
-        public string AuthorizedFolders { get; set; }
+        
         [DataType(DataType.DateTime)]
         public DateTime CreatedOn { get; set; }
         [DataType(DataType.DateTime)]
         public int CreatedBy { get; set; }
         public string Avatar { get; set; }
         public string Theme { get; set; }
-        public virtual ICollection<UserRegions> UserRegions { get; set; }
+        
         [ForeignKey("Company")]
         public long CompanyId { get; set; }
         public Company Company { get; set; }

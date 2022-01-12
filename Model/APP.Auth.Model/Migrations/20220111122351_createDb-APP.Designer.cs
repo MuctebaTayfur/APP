@@ -3,15 +3,17 @@ using System;
 using APP.Auth.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace APP.Auth.Model.Migrations
 {
     [DbContext(typeof(AuthContext))]
-    partial class AuthContextModelSnapshot : ModelSnapshot
+    [Migration("20220111122351_createDb-APP")]
+    partial class createDbAPP
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,6 +66,9 @@ namespace APP.Auth.Model.Migrations
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
+
+                    b.Property<string>("AuthorizedFolders")
+                        .HasColumnType("text");
 
                     b.Property<string>("Avatar")
                         .HasColumnType("text");
@@ -348,7 +353,7 @@ namespace APP.Auth.Model.Migrations
             modelBuilder.Entity("APP.Auth.Model.Entity.ApplicationUser", b =>
                 {
                     b.HasOne("APP.Base.Model.Entity.Company", "Company")
-                        .WithMany("Users")
+                        .WithMany("MyProperty")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -422,7 +427,7 @@ namespace APP.Auth.Model.Migrations
 
             modelBuilder.Entity("APP.Base.Model.Entity.Company", b =>
                 {
-                    b.Navigation("Users");
+                    b.Navigation("MyProperty");
                 });
 #pragma warning restore 612, 618
         }

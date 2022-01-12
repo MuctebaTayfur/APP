@@ -107,11 +107,7 @@ namespace APP.Auth.API.Controllers
         private ActionResult<Token> CreateJwtSecurityToken(ApplicationUser user, ApplicationRole role, int tokenExpiresTime = 30)
         {
             //var getApiResult = _apiHandler.GetApiResult<UserRegions>($"user-service/regionforuser/{user.UserName}").GetAwaiter().GetResult();
-            var getApiResult = new ApiResult<UserRegions>()
-            {
-                Result = true,
-                Data = new UserRegions()
-            };
+        
             //if (!getApiResult.Result)
             //    return BadRequest(new ApiResult<UserRegions>()
             //    {
@@ -120,9 +116,7 @@ namespace APP.Auth.API.Controllers
             //        HttpStatusCode = (int)HttpStatusCode.BadRequest
             //    });
 
-            var regionId = 0L;
-            if (getApiResult.Result && getApiResult.Data != null)
-                regionId = getApiResult.Data.RegionId;
+          
 
             var claims = new List<Claim>
             {
@@ -130,8 +124,7 @@ namespace APP.Auth.API.Controllers
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new(ClaimTypes.Role, ToStringRoleEnum(role.Name).ToString()),
                 new(JwtRegisteredClaimNames.UniqueName, ClaimValueTypes.Integer64),
-                new(JwtRegisteredClaimNames.Email, user.Email),
-                new(ClaimTypes.GroupSid, regionId.ToString())
+                new(JwtRegisteredClaimNames.Email, user.Email),                
             };
 
             var jwtToken = CreateJWTToken(claims, tokenExpiresTime);
@@ -190,8 +183,7 @@ namespace APP.Auth.API.Controllers
 
             var userDto = _mapper.Map<ApplicationUserDto>(user);
             userDto.Role = _userManager.GetRolesAsync(user).GetAwaiter().GetResult().FirstOrDefault();
-            if (user.AuthorizedFolders is { Length: > 0 })
-                userDto.AuthorizedFolders = JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(user.AuthorizedFolders);
+          
 
             return Ok(new ApiResult<ApplicationUserDto>()
             {
@@ -226,8 +218,9 @@ namespace APP.Auth.API.Controllers
                     TwoFactorEnabled = false,
                     UserName = applicationUserDto.UserName,
                     Email = applicationUserDto.Email,
-                    PhoneNumber = applicationUserDto.PhoneNumber,
-                    AuthorizedFolders = applicationUserDto.AuthorizedFolders == null ? null : JsonConvert.SerializeObject(applicationUserDto.AuthorizedFolders)
+                    CompanyId=applicationUserDto.CompanyId,
+                    PhoneNumber = applicationUserDto.PhoneNumber
+                   
                 };
 
                 var addResult = await _userManager.CreateAsync(applicationUser);
@@ -267,7 +260,7 @@ namespace APP.Auth.API.Controllers
             var user = await _userManager.FindByNameAsync(changePasswordDto.Username);
             var userDto = _mapper.Map<ApplicationUserDto>(user);
             userDto.Role = _userManager.GetRolesAsync(user).GetAwaiter().GetResult().FirstOrDefault()?.ToString();
-            userDto.AuthorizedFolders = JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(user.AuthorizedFolders);
+          
 
             var changePasswordResult = await _userManager.ChangePasswordAsync(user, changePasswordDto.CurrentPassword, changePasswordDto.NewPassword);
             if (changePasswordResult.Succeeded)
@@ -361,9 +354,7 @@ namespace APP.Auth.API.Controllers
                 repoApplicationUser.SecurityStamp = Guid.NewGuid().ToString();
                 if (!string.IsNullOrEmpty(applicationUserDto.Email)) repoApplicationUser.Email = applicationUserDto.Email;
                 if (!string.IsNullOrEmpty(applicationUserDto.PhoneNumber)) repoApplicationUser.PhoneNumber = applicationUserDto.PhoneNumber;
-
-
-                repoApplicationUser.AuthorizedFolders = applicationUserDto.AuthorizedFolders == null ? repoApplicationUser.AuthorizedFolders : JsonConvert.SerializeObject(applicationUserDto.AuthorizedFolders);
+             
 
 
                 var updateResult = await _userManager.UpdateAsync(repoApplicationUser);
@@ -380,7 +371,7 @@ namespace APP.Auth.API.Controllers
                 }
                 var userDto = _mapper.Map<ApplicationUserDto>(repoApplicationUser);
                 userDto.Role = _userManager.GetRolesAsync(repoApplicationUser).GetAwaiter().GetResult().FirstOrDefault()?.ToString();
-                userDto.AuthorizedFolders = repoApplicationUser.AuthorizedFolders == null ? null : JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(repoApplicationUser.AuthorizedFolders);
+               
 
                 scope.Complete();
 
@@ -399,60 +390,7 @@ namespace APP.Auth.API.Controllers
                 { HttpStatusCode = (int)HttpStatusCode.Unauthorized, Message = $"{ex.Message}" });
             }
         }
-        [ActionName("UpdateAuthorizeFolders/{username}")]
-        [HttpPost("UpdateAuthorizeFolders/{username}")]
-        public async Task<ActionResult<ApplicationUser>> UpdateAuthorizeFolders(string username, [FromBody] List<AuthorizedFolderDto> folders)
-        {
-            if (string.IsNullOrEmpty(username)) ModelState.AddModelError("[username]", "username parametresi boş olamaz.");
-
-            if (!ModelState.IsValid) return Ok(new ApiResult<List<AuthorizedFolderDto>>()
-            {
-                Errors = ModelState.GetErrors(),
-                HttpStatusCode = (int?)HttpStatusCode.BadRequest,
-                Result = false,
-            });
-            using var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
-            try
-            {
-                if (folders is null || folders.Count < 1) return Ok(new ApiResult<ApplicationUser>() { Result = false });
-
-                var repoApplicationUser = await _userManager.FindByNameAsync(username);
-                var userAuthorizedFolders = JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(repoApplicationUser.AuthorizedFolders);
-
-                foreach (var item in folders)
-                {
-                    var enumName = Enum.GetName(item.Authority);
-                    if (enumName is not null)
-                    {
-                        var folderAuthorizationsToUpdate = userAuthorizedFolders.SingleOrDefault(x => x.FolderId == item.FolderId);
-                        if (folderAuthorizationsToUpdate is null)
-                        {
-                            userAuthorizedFolders.Add(item);
-                            break;
-                        }
-                        folderAuthorizationsToUpdate.Authority = item.Authority;
-                    }
-                }
-                repoApplicationUser.AuthorizedFolders = JsonConvert.SerializeObject(userAuthorizedFolders);
-                var updateResult = await _userManager.UpdateAsync(repoApplicationUser);
-                if (!updateResult.Succeeded) throw new Exception(updateResult.Errors.Select(x => x.Description).Aggregate((i, j) => i + "//" + j));
-
-                scope.Complete();
-
-                return Ok(new ApiResult<ApplicationUser>()
-                {
-                    Result = true,
-                    Data = repoApplicationUser,
-                    HttpStatusCode = (int)HttpStatusCode.OK
-                });
-            }
-            catch (System.Exception ex)
-            {
-                scope.Dispose();
-                return Ok(new ApiResult<ApplicationUser>()
-                { HttpStatusCode = (int)HttpStatusCode.Unauthorized, Message = $"{ex.Message}" });
-            }
-        }
+      
         [Authorize]
         [ActionName("DeleteApplicationUser")]
         [HttpDelete("DeleteApplicationUser")]
@@ -520,7 +458,7 @@ namespace APP.Auth.API.Controllers
                         LastName = x.LastName,
                         PhoneNumber = x.PhoneNumber,
                         Role = _userManager.GetRolesAsync(x).GetAwaiter().GetResult().FirstOrDefault()?.ToString(),
-                        AuthorizedFolders = string.IsNullOrEmpty(x.AuthorizedFolders) ? null : JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(x.AuthorizedFolders)
+                      
                     }).ToList(),
                     Message = "",
                     Result = true,
@@ -562,9 +500,7 @@ namespace APP.Auth.API.Controllers
                 LastName = x.LastName,
                 PhoneNumber = x.PhoneNumber,
                 Role = _userManager.GetRolesAsync(x).Result.FirstOrDefault()?.ToString(),
-                AuthorizedFolders = string.IsNullOrEmpty(x.AuthorizedFolders)
-                    ? null
-                    : JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(x.AuthorizedFolders)
+               
             }).ToList();
 
             users = users.Where(x => x.Role != null && x.Role.ToLower().Trim().Equals(role.ToLower().Trim())).Skip((page) * limit).Take(limit).ToList();
@@ -603,39 +539,7 @@ namespace APP.Auth.API.Controllers
                 });
             }
         }
-        [ActionName("GetApplicationUserAuthorizedFolders/{username}")]
-        [HttpGet("GetApplicationUserAuthorizedFolders/{username}")]
-        public ActionResult<List<AuthorizedFolderDto>> GetApplicationUserAuthorizedFolders(string username)
-        {
-
-            if (string.IsNullOrEmpty(username)) ModelState.AddModelError("[username]", "username parametresi boş olamaz.");
-
-
-            if (ModelState.IsValid)
-            {
-                var repoUser = _userManager.Users.FirstOrDefault(x => x.UserName == username);
-                if (repoUser == null) return Ok(new ApiResult<List<AuthorizedFolderDto>>()
-                {
-                    Result = false,
-                    Data = null,
-                    Message = $"'{username}' adlı kullanıcı bulunamadı.",
-                    HttpStatusCode = (int)HttpStatusCode.NotFound
-                });
-                var authorizedFolders = string.IsNullOrEmpty(repoUser.AuthorizedFolders) ? null : JsonConvert.DeserializeObject<List<AuthorizedFolderDto>>(repoUser.AuthorizedFolders);
-                return Ok(new ApiResult<List<AuthorizedFolderDto>>()
-                {
-                    Result = true,
-                    Data = authorizedFolders,
-                    HttpStatusCode = (int)HttpStatusCode.OK
-                });
-            }
-            return Ok(new ApiResult<List<AuthorizedFolderDto>>()
-            {
-                Errors = ModelState.GetErrors(),
-                HttpStatusCode = (int?)HttpStatusCode.BadRequest,
-                Result = false,
-            });
-        }
+      
         [HttpPost("CreateRole")]
         public async Task<IActionResult> CreateRole(AppRoleDto model)
         {

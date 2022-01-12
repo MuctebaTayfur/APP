@@ -15,6 +15,6 @@ namespace APP.Base.Model.Entity
         public string Address { get; set; }
         public string Email { get; set; }
         public string Avatar { get; set; }
-        public ICollection<ApplicationUser> MyProperty { get; set; }
+        public ICollection<ApplicationUser> Users { get; set; }
     }
 }
