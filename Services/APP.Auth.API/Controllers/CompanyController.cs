@@ -32,7 +32,7 @@ namespace APP.Auth.API.Controllers
         }
         [ActionName("AddCompanyAndAdminUser")]
         [HttpPost("AddCompanyAndAdminUser")]
-        public async Task<ActionResult<Company>> AddCompanyAndAdminUser([FromBody] UserCompanyDto model)
+        public async Task<ActionResult<Company>> AddCompanyAndAdminUser([FromBody] CompanyUserDto model)
         { 
             try
             {
@@ -70,9 +70,14 @@ namespace APP.Auth.API.Controllers
                     Avatar = model.UserAvatar,
                     Role = "Admin",
                     Theme = model.Theme,
-                    CompanyId = company.Id,
+                   // CompanyId = company.Id,
                 };
                 var apiResult =await _apiHandler.Post<ApplicationUser>($"AddApplicationUserWithRole", applicationUserDto);
+                if (apiResult==null)
+                {
+                    return Ok(new ApiResult<Company>()
+                    { Message = "Kullanıcı eklenemedi", Result = false, HttpStatusCode = (int?)HttpStatusCode.InternalServerError });
+                }
                 List<ApplicationUser> userList = new List<ApplicationUser>();
                 userList.Add(apiResult);
                 company.Users = userList;
@@ -86,6 +91,42 @@ namespace APP.Auth.API.Controllers
                 return Ok(new ApiResult<Company>()
                 { Message = $"Error: {ex.Message}", Result = false, HttpStatusCode = (int?)HttpStatusCode.BadRequest });
             }
+        }
+        [ActionName("AddCompanyUser")]
+        [HttpPost("AddCompanyUser")]
+        public async Task<ActionResult<ApplicationUser>> AddCompanyUser([FromBody] ApplicationUserDto model)
+        {
+            try
+            {
+                var company = _unitOfWork.Repository<Company>().GetById(model.CompanyId);
+                
+                if (company == null)
+                {
+                    return NotFound(new ApiResult<ApplicationUser>()
+                    {
+                        Message = "Company bulunamadı",
+                        Result = false,
+                        HttpStatusCode = (int?)HttpStatusCode.NotFound
+                    });
+                }
+ //ürün kullanıcı mikatarı kontolü
+                var apiResult = await _apiHandler.Post<ApplicationUser>($"AddApplicationUserWithRole", model);
+                if (apiResult ==null)
+                {
+                    return Ok(new ApiResult<ApplicationUser>() {
+                        Message = "Kullanıcı eklenemedi", Result = false, HttpStatusCode = (int?)HttpStatusCode.InternalServerError
+                    });
+                }
+                return Ok(new ApiResult<ApplicationUser>(){
+                   Result=true, Message="kullanıcı kaydı başarılı", HttpStatusCode=(int?)HttpStatusCode.OK,Data=apiResult
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new ApiResult<ApplicationUser>()
+                { Message = $"Error: {ex.Message}", Result = false, HttpStatusCode = (int?)HttpStatusCode.BadRequest });
+            }
+         
         }
 
     }

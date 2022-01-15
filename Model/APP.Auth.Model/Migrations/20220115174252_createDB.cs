@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace APP.Auth.Model.Migrations
 {
-    public partial class createDb : Migration
+    public partial class createDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -143,13 +143,49 @@ namespace APP.Auth.Model.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Packets",
+                schema: "auth",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Cost = table.Column<long>(type: "bigint", nullable: false),
+                    UserAmount = table.Column<int>(type: "integer", nullable: false),
+                    PacketTime = table.Column<int>(type: "integer", nullable: false),
+                    PacketStartTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    PacketEndTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    ProductId = table.Column<long>(type: "bigint", nullable: false),
+                    Status = table.Column<short>(type: "smallint", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    CreatedBy = table.Column<long>(type: "bigint", nullable: false),
+                    ModifiedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    ModifiedBy = table.Column<long>(type: "bigint", nullable: true),
+                    DeletedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: true),
+                    DeletedBy = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Packets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Packets_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalSchema: "auth",
+                        principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ApplicationUserProducts",
                 schema: "auth",
                 columns: table => new
                 {
                     ApplicationUserId = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: false),
-                    Id = table.Column<long>(type: "bigint", nullable: false)
+                    ProductStartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    ProductEndDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -319,6 +355,12 @@ namespace APP.Auth.Model.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Packets_ProductId",
+                schema: "auth",
+                table: "Packets",
+                column: "ProductId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -348,7 +390,7 @@ namespace APP.Auth.Model.Migrations
                 schema: "auth");
 
             migrationBuilder.DropTable(
-                name: "Products",
+                name: "Packets",
                 schema: "auth");
 
             migrationBuilder.DropTable(
@@ -357,6 +399,10 @@ namespace APP.Auth.Model.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers",
+                schema: "auth");
+
+            migrationBuilder.DropTable(
+                name: "Products",
                 schema: "auth");
 
             migrationBuilder.DropTable(

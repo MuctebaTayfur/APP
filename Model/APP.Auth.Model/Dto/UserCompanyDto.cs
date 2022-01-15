@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace APP.Auth.Model.Dto
 {
-    public class UserCompanyDto
+    public class CompanyUserDto
     {
         public long Id { get; set; }
         public Status Status { get; set; }
@@ -17,8 +17,6 @@ namespace APP.Auth.Model.Dto
         public long? ModifiedBy { get; set; }
         public DateTime? DeletedOn { get; set; }
         public long? DeletedBy { get; set; }
-        public long UserId { get; set; }
-        public long CompanyId { get; set; }
         public string CompanyName { get; set; }
         public string UserName { get; set; }
         public string FirstName { get; set; }

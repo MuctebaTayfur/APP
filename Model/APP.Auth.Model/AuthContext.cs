@@ -13,6 +13,7 @@ namespace APP.Auth.Model
         public DbSet<ApplicationRole> ApplicationRoles { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Packet> Packets { get; set; }
         public DbSet<ApplicationUserProduct> ApplicationUserProducts { get; set; }
 
 

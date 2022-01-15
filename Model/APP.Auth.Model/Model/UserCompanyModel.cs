@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace APP.Auth.Model.Model
 {
-    public class UserCompanyModel
+    public class CompanyUserModel
     {
         public long UserId { get; set; }
         public long CompanyId { get; set; }
