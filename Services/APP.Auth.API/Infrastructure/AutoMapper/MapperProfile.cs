@@ -27,6 +27,8 @@ namespace APP.Auth.API.Infrastructure.AutoMapper
                 .IgnoreAllNonExisting();
             CreateMap<PacketDto, Packet>()
                 .IgnoreAllNonExisting();
+            CreateMap<CompanyUserDto, ApplicationUserDto>()
+                .IgnoreAllNonExisting();
 
         }
     }

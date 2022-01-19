@@ -157,10 +157,10 @@ namespace APP.Auth.API.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
-        [Authorize]
-        [ActionName("GetApplicationUser")]
-        [HttpGet("GetApplicationUser/{username}")]
-        public ActionResult<ApplicationUserDto> GetApplicationUser(string username)
+        //[Authorize]
+        [ActionName("ApplicationUser")]
+        [HttpGet("ApplicationUser/{username}")]
+        public ActionResult<ApplicationUserDto> ApplicationUser(string username)
         {
             if (string.IsNullOrEmpty(username)) ModelState.AddModelError("[username]", "username parametresi boş olamaz.");
 
@@ -395,8 +395,8 @@ namespace APP.Auth.API.Controllers
         }
       
         [Authorize]
-        [ActionName("DeleteApplicationUser")]
-        [HttpDelete("DeleteApplicationUser")]
+        [ActionName("ApplicationUser")]
+        [HttpDelete("ApplicationUser")]
         public async Task<ActionResult<ApplicationUser>> DeleteApplicationUser(string username)
         {
             if (string.IsNullOrEmpty(username)) ModelState.AddModelError("[username]", "username parametresi boş olamaz.");

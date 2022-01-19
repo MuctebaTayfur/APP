@@ -31,7 +31,7 @@ namespace APP.Auth.Model
 
             modelBuilder.HasDefaultSchema("auth");
             modelBuilder.Entity<ApplicationUserProduct>()
-                .HasKey(up => new { up.ApplicationUserId,up.ProductId});
+                .HasKey(up => new { up.ApplicationUserId,up.ProductId,up.CompanyId});
             modelBuilder.Entity<ApplicationUserProduct>()
                 .HasOne(up => up.ApplicationUser)
                 .WithMany(au => au.ApplicationUserProducts)
@@ -40,6 +40,10 @@ namespace APP.Auth.Model
                 .HasOne(up => up.Product)
                 .WithMany(p => p.ApplicationUserProducts)
                 .HasForeignKey(au => au.ProductId);
+            modelBuilder.Entity<ApplicationUserProduct>()
+              .HasOne(up => up.Company)
+              .WithMany(p => p.ApplicationUserProducts)
+              .HasForeignKey(au => au.CompanyId);
 
         }
     }

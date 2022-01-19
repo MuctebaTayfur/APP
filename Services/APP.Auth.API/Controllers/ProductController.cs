@@ -31,8 +31,8 @@ namespace APP.Auth.API.Controllers
             _unitOfWork = unitOfWork;
             this.mapper = mapper;
         }
-        [ActionName("AddProduct")]
-        [HttpPost("AddProduct")]
+        [ActionName("Product")]
+        [HttpPost("Product")]
         public async Task<ActionResult<Product>> AddProduct([FromBody] ProductDto model)
         {
             try
@@ -62,8 +62,8 @@ namespace APP.Auth.API.Controllers
             }
         }
         //  [Authorize(Roles ="Admin")]
-        [ActionName("AddProductUser")]
-        [HttpPost("AddProductUser")]
+        [ActionName("ProductUser")]
+        [HttpPost("ProductUser")]
         public async Task<ActionResult<Product>> AddProductUser([FromBody] ProductUserDto model)
         {
             try
@@ -74,7 +74,10 @@ namespace APP.Auth.API.Controllers
                     ApplicationUserId = model.UserId,
                     ProductId = model.ProductId,
                     ProductStartDate = DateTime.Now,
-                    ProductEndDate = DateTime.Now.AddMonths(productPacket.PacketTime)
+                    ProductEndDate = DateTime.Now.AddMonths(productPacket.PacketTime),
+                    PacketId=model.PacketId,
+                    CompanyId=model.CompanyId
+                    
                 };                        
                 _unitOfWork.Repository<ApplicationUserProduct>().Insert(applicationUserProduct);               
                 if (_unitOfWork.SaveChanges() <= 0)

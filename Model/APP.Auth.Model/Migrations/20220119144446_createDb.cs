@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace APP.Auth.Model.Migrations
 {
-    public partial class createDB : Migration
+    public partial class createDb : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -151,11 +151,9 @@ namespace APP.Auth.Model.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Description = table.Column<string>(type: "text", nullable: true),
-                    Cost = table.Column<long>(type: "bigint", nullable: false),
+                    Price = table.Column<long>(type: "bigint", nullable: false),
                     UserAmount = table.Column<int>(type: "integer", nullable: false),
                     PacketTime = table.Column<int>(type: "integer", nullable: false),
-                    PacketStartTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    PacketEndTime = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: false),
                     Status = table.Column<short>(type: "smallint", nullable: false),
                     CreatedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
@@ -184,17 +182,26 @@ namespace APP.Auth.Model.Migrations
                 {
                     ApplicationUserId = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<long>(type: "bigint", nullable: false),
+                    CompanyId = table.Column<long>(type: "bigint", nullable: false),
                     ProductStartDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
-                    ProductEndDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false)
+                    ProductEndDate = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    PacketId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ApplicationUserProducts", x => new { x.ApplicationUserId, x.ProductId });
+                    table.PrimaryKey("PK_ApplicationUserProducts", x => new { x.ApplicationUserId, x.ProductId, x.CompanyId });
                     table.ForeignKey(
                         name: "FK_ApplicationUserProducts_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalSchema: "auth",
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ApplicationUserProducts_Companies_CompanyId",
+                        column: x => x.CompanyId,
+                        principalSchema: "auth",
+                        principalTable: "Companies",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -299,6 +306,12 @@ namespace APP.Auth.Model.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ApplicationUserProducts_CompanyId",
+                schema: "auth",
+                table: "ApplicationUserProducts",
+                column: "CompanyId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ApplicationUserProducts_ProductId",

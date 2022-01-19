@@ -13,7 +13,7 @@ namespace APP.Auth.Model.Dto
         public string UserName { get; set; }
         public long ProductId { get; set; }        
         public long PacketId { get; set; }
-        public DateTime? PacketStartDate { get; set; }
-      
+        public long? CompanyId { get; set; }
+
     }
 }

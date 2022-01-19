@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace APP.Auth.Model.Migrations
 {
     [DbContext(typeof(AuthContext))]
-    [Migration("20220115180129_updatedDB")]
-    partial class updatedDB
+    [Migration("20220119144446_createDb")]
+    partial class createDb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -159,13 +159,21 @@ namespace APP.Auth.Model.Migrations
                     b.Property<long>("ProductId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("CompanyId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PacketId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("ProductEndDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("ProductStartDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.HasKey("ApplicationUserId", "ProductId");
+                    b.HasKey("ApplicationUserId", "ProductId", "CompanyId");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("ProductId");
 
@@ -435,6 +443,12 @@ namespace APP.Auth.Model.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("APP.Base.Model.Entity.Company", "Company")
+                        .WithMany("ApplicationUserProducts")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("APP.Base.Model.Entity.Product", "Product")
                         .WithMany("ApplicationUserProducts")
                         .HasForeignKey("ProductId")
@@ -442,6 +456,8 @@ namespace APP.Auth.Model.Migrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
+
+                    b.Navigation("Company");
 
                     b.Navigation("Product");
                 });
@@ -515,6 +531,8 @@ namespace APP.Auth.Model.Migrations
 
             modelBuilder.Entity("APP.Base.Model.Entity.Company", b =>
                 {
+                    b.Navigation("ApplicationUserProducts");
+
                     b.Navigation("Users");
                 });
 

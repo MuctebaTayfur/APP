@@ -2,11 +2,13 @@
 using APP.Auth.Model.Dto;
 using APP.Auth.Model.Entity;
 using APP.Auth.Model.Model;
+using APP.Base.Model.Dto;
 using APP.Base.Model.Entity;
 using APP.Base.Model.Enum;
 using APP.Data.Interface;
 using APP.Infra.Base.BaseHandler;
 using APP.Infra.Base.BaseResult;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -25,14 +27,16 @@ namespace APP.Auth.API.Controllers
         public ApiHandler _apiHandler;
         private readonly IUnitOfWork<AuthContext> _unitOfWork;
         private readonly IHttpClientFactory _httpClientFactory;
-        public CompanyController(IUnitOfWork<AuthContext> unitOfWork)
+        private readonly IMapper _mapper;
+        public CompanyController(IUnitOfWork<AuthContext> unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _apiHandler =new ApiHandler();
+            _mapper = mapper;
         }
-        [ActionName("AddCompanyAndAdminUser")]
-        [HttpPost("AddCompanyAndAdminUser")]
-        public async Task<ActionResult<Company>> AddCompanyAndAdminUser([FromBody] CompanyUserDto model)
+        [ActionName("CompanyAndAdminUser")]
+        [HttpPost("CompanyAndAdminUser")]
+        public async Task<ActionResult<Company>> Company([FromBody] CompanyDto model)
         { 
             try
             {
@@ -45,8 +49,7 @@ namespace APP.Auth.API.Controllers
                     CreatedOn = DateTime.Now,
                     CreatedBy = 111111110,
                     Avatar = model.UserAvatar,
-                    Address = model.Address,
-                    DeletedBy = model.DeletedBy,
+                    Address = model.Address              
                 };
                 
                 _unitOfWork.Repository<Company>().Insert(company);
@@ -70,7 +73,7 @@ namespace APP.Auth.API.Controllers
                     Avatar = model.UserAvatar,
                     Role = "Admin",
                     Theme = model.Theme,
-                   // CompanyId = company.Id,
+                    CompanyId = company.Id,
                 };
                 var apiResult =await _apiHandler.Post<ApplicationUser>($"AddApplicationUserWithRole", applicationUserDto);
                 if (apiResult==null)
@@ -81,7 +84,7 @@ namespace APP.Auth.API.Controllers
                 List<ApplicationUser> userList = new List<ApplicationUser>();
                 userList.Add(apiResult);
                 company.Users = userList;
-             
+
                 //provider.Flush();
                 return Ok(new ApiResult<Company>()
                 { Message = "Başarılı", Result = true, Data = company, HttpStatusCode = (int?)HttpStatusCode.OK });
@@ -92,25 +95,58 @@ namespace APP.Auth.API.Controllers
                 { Message = $"Error: {ex.Message}", Result = false, HttpStatusCode = (int?)HttpStatusCode.BadRequest });
             }
         }
-        [ActionName("AddCompanyUser")]
-        [HttpPost("AddCompanyUser")]
-        public async Task<ActionResult<ApplicationUser>> AddCompanyUser([FromBody] ApplicationUserDto model)
+        [ActionName("CompanyUser")]
+        [HttpPost("CompanyUser")]
+        public async Task<ActionResult<ApplicationUser>> AddCompanyUser([FromBody] CompanyUserDto model)
         {
             try
             {
-                var company = _unitOfWork.Repository<Company>().GetById(model.CompanyId);
-                
-                if (company == null)
+                var repoApplicationUser = await _apiHandler.Get<ApplicationUser>($"ApplicationUser/{model.AdminUserName}");                               
+                if ( repoApplicationUser==null)
                 {
                     return NotFound(new ApiResult<ApplicationUser>()
                     {
-                        Message = "Company bulunamadı",
+                        Message = " Admin Kullanıcı Bulunamadı",
                         Result = false,
                         HttpStatusCode = (int?)HttpStatusCode.NotFound
                     });
                 }
- //ürün kullanıcı mikatarı kontolü
-                var apiResult = await _apiHandler.Post<ApplicationUser>($"AddApplicationUserWithRole", model);
+                var repoApplicationUserProducts = _unitOfWork.Repository<ApplicationUserProduct>().GetMany(p => p.CompanyId == repoApplicationUser.CompanyId && p.ProductId==model.ProductId);
+
+                var repoApplicationUserProduct = repoApplicationUserProducts.FirstOrDefault();
+               
+                var packetUserAmount = _unitOfWork.Repository<Packet>().GetById(repoApplicationUserProduct.PacketId).UserAmount;
+                if (repoApplicationUserProducts.Count() >= packetUserAmount)
+                {
+                    return Ok(new ApiResult<ApplicationUser>()
+                    {
+                        HttpStatusCode = (int?)HttpStatusCode.BadRequest,
+                        Message = "daha fazla kullanıcı ekleyemezsiniz"
+                    });
+                }
+                var applicationUser = new ApplicationUserDto()
+                {
+                    CompanyId = repoApplicationUser.CompanyId,
+                    Email=model.Email,
+                    FirstName=model.FirstName,
+                    LastName=model.LastName,
+                    UserName=model.UserName,
+                    Password=model.Password,
+                    Role=model.Role,
+                    ProductId=model.ProductId               
+                    
+                };
+                var apiResult = await _apiHandler.Post<ApplicationUser>($"AddApplicationUserWithRole", applicationUser);
+                var applicationUserProduct = new ApplicationUserProduct() {
+                    ProductId = model.ProductId,
+                    ApplicationUserId = apiResult.Id, 
+                    CompanyId= apiResult.CompanyId,
+                    PacketId = repoApplicationUserProduct.PacketId,
+                    ProductStartDate=repoApplicationUserProduct.ProductStartDate,
+                    ProductEndDate=repoApplicationUserProduct.ProductEndDate
+                };
+                _unitOfWork.Repository<ApplicationUserProduct>().Insert(applicationUserProduct);
+                _unitOfWork.SaveChanges();
                 if (apiResult ==null)
                 {
                     return Ok(new ApiResult<ApplicationUser>() {

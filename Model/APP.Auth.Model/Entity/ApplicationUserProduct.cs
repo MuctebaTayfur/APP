@@ -17,7 +17,10 @@ namespace APP.Auth.Model.Entity
         public ApplicationUser ApplicationUser { get; set; }    
         public long ProductId { get; set; }
         public Product Product { get; set; }
+        public long? CompanyId { get; set; }
+        public Company Company { get; set; }
         public DateTime ProductStartDate { get; set; }
         public DateTime ProductEndDate { get; set; }
+        public long PacketId { get; set; }
     }
 }

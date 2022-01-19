@@ -10,8 +10,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace APP.Auth.Model.Migrations
 {
     [DbContext(typeof(AuthContext))]
-    [Migration("20220115174252_createDB")]
-    partial class createDB
+    [Migration("20220119145549_update-database")]
+    partial class updatedatabase
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -159,13 +159,21 @@ namespace APP.Auth.Model.Migrations
                     b.Property<long>("ProductId")
                         .HasColumnType("bigint");
 
+                    b.Property<long?>("CompanyId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PacketId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("ProductEndDate")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime>("ProductStartDate")
                         .HasColumnType("timestamp without time zone");
 
-                    b.HasKey("ApplicationUserId", "ProductId");
+                    b.HasKey("ApplicationUserId", "ProductId", "CompanyId");
+
+                    b.HasIndex("CompanyId");
 
                     b.HasIndex("ProductId");
 
@@ -230,9 +238,6 @@ namespace APP.Auth.Model.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
-                    b.Property<long>("Cost")
-                        .HasColumnType("bigint");
-
                     b.Property<long>("CreatedBy")
                         .HasColumnType("bigint");
 
@@ -257,14 +262,11 @@ namespace APP.Auth.Model.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("PacketEndTime")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<DateTime>("PacketStartTime")
-                        .HasColumnType("timestamp without time zone");
-
                     b.Property<int>("PacketTime")
                         .HasColumnType("integer");
+
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("ProductId")
                         .HasColumnType("bigint");
@@ -441,6 +443,12 @@ namespace APP.Auth.Model.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("APP.Base.Model.Entity.Company", "Company")
+                        .WithMany("ApplicationUserProducts")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("APP.Base.Model.Entity.Product", "Product")
                         .WithMany("ApplicationUserProducts")
                         .HasForeignKey("ProductId")
@@ -448,6 +456,8 @@ namespace APP.Auth.Model.Migrations
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
+
+                    b.Navigation("Company");
 
                     b.Navigation("Product");
                 });
@@ -521,6 +531,8 @@ namespace APP.Auth.Model.Migrations
 
             modelBuilder.Entity("APP.Base.Model.Entity.Company", b =>
                 {
+                    b.Navigation("ApplicationUserProducts");
+
                     b.Navigation("Users");
                 });
 

@@ -27,9 +27,9 @@ namespace APP.Auth.API.Controllers
             _unitOfWork = unitOfWork;
             this.mapper = mapper;
         }
-        [ActionName("AddPacket")]
-        [HttpPost("AddPacket")]
-        public async Task<ActionResult<Packet>> AddPacket([FromBody] PacketDto model)
+        [ActionName("Packet")]
+        [HttpPost("Packet")]
+        public async Task<ActionResult<Packet>> Packet([FromBody] PacketDto model)
         {
             try
             {
