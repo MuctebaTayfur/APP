@@ -82,6 +82,12 @@ namespace APP.Common.Data.Concrete
             }
         }
     }
+    //controller IUnitOfWork<AuthContext> ctor dan talep etti
+    //startup scoped servici ile unitOfWork<AuthContext> generic classýnda üretmeye baþladý. Fakat;
+    // UnitOfWork<AuthContext> ctor da bir AuthContext/(T) türünde dbcontext diye bir parametre istiyor.
+    //Bunun için tekrar startup a gidip services.AddDbContext<AuthContext> den authcontextin nesnesini alýyor
+    //dikkat edersen dbcontexoptionsbulide parametresini servise ek olarka veriyor. çünki auth context ctor da dbcontextoptions istiyor.
+
 
     public class UnitOfWork<T> : UnitOfWork, IUnitOfWork<T> where T : DbContext
     {
