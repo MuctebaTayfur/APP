@@ -91,7 +91,7 @@ namespace APP.Common.Data.Concrete
     //dikkat edersen dbcontexoptionsbulide parametresini servise ek olarka veriyor. çünki auth context ctor da dbcontextoptions istiyor.
 
     //Activator.CreateInstance runtime da çalýþýr. eðer new le nesneyi üretseydik _dataContext i de new le üretip parametre olarak vermemiz
-    //gerekecekti.
+    //gerekecekti. birde Tentity runtime belli olacak. buda repository i  new ile compailer da üretmek çok mantýklý olamayabilir.
     //typeof(type) compailer
     //getType("type") runtime
     #endregion
