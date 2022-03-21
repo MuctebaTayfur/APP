@@ -89,6 +89,11 @@ namespace APP.Common.Data.Concrete
     // UnitOfWork<AuthContext> ctor da bir AuthContext/(T) türünde dbcontext diye bir parametre istiyor.
     //Bunun için tekrar startup a gidip services.AddDbContext<AuthContext> den authcontextin nesnesini alýyor
     //dikkat edersen dbcontexoptionsbulide parametresini servise ek olarka veriyor. çünki auth context ctor da dbcontextoptions istiyor.
+
+    //Activator.CreateInstance runtime da çalýþýr. eðer new le nesneyi üretseydik _dataContext i de new le üretip parametre olarak vermemiz
+    //gerekecekti.
+    //typeof(type) compailer
+    //getType("type") runtime
     #endregion
 
     public class UnitOfWork<T> : UnitOfWork, IUnitOfWork<T> where T : DbContext
